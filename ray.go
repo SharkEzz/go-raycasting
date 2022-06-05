@@ -51,8 +51,8 @@ func (r *Ray) Cast(boundary *Boundary) *utils.Point2D {
 
 func (r *Ray) SetOrigin(origin utils.Point2D) {
 	r.StartPos = origin
-	r.StopX = origin.X + r.Direction.X*30
-	r.StopY = origin.Y + r.Direction.Y*30
+	r.StopX = origin.X + r.Direction.X
+	r.StopY = origin.Y + r.Direction.Y
 }
 
 func (r *Ray) SetStop(stop utils.Point2D) {
@@ -83,8 +83,8 @@ func NewRay(startPos utils.Point2D, angle float64) Ray {
 			Y: math.Sin(angle),
 		},
 	}
-	ray.StopX = startPos.X + ray.Direction.X*30
-	ray.StopY = startPos.Y + ray.Direction.Y*30
+	ray.StopX = startPos.X + ray.Direction.X
+	ray.StopY = startPos.Y + ray.Direction.Y
 
 	return ray
 }

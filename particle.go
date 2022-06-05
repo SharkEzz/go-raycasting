@@ -13,6 +13,7 @@ import (
 type Particle struct {
 	PosX, PosY, Rotation float64
 	Rays                 []Ray
+	Scene                *[]float64
 }
 
 func (p *Particle) DrawParticle(screen *ebiten.Image) {
@@ -31,14 +32,16 @@ func (p *Particle) MoveParticle(posX, posY float64, boundaries *[]Boundary) {
 	p.PosX = posX
 	p.PosY = posY
 
+	var scene []float64
+
 	for index := range p.Rays {
 		p.Rays[index].SetOrigin(utils.Point2D{
 			X: posX,
 			Y: posY,
 		})
-		p.Rays[index].SetDirection(p.Rotation * (math.Pi / 180))
+		p.Rays[index].SetDirection(utils.ToRadian(p.Rotation))
 
-		infinity := math.Inf(0)
+		record := math.Inf(0)
 		var closest *utils.Point2D
 
 		for _, boundary := range *boundaries {
@@ -48,31 +51,34 @@ func (p *Particle) MoveParticle(posX, posY float64, boundaries *[]Boundary) {
 			}
 
 			distance := math.Sqrt(math.Pow(intersect.X-p.PosX, 2) + math.Pow(intersect.Y-p.PosY, 2))
-			if distance >= infinity {
+			if distance >= record {
 				continue
 			}
 
-			infinity = distance
+			record = distance
 			closest = intersect
 		}
 
-		if closest == nil {
-			panic("Closest cannot be nil")
+		if closest != nil {
+			p.Rays[index].SetStop(*closest)
 		}
-
-		p.Rays[index].SetStop(*closest)
+		scene = append(scene, record)
 	}
+
+	p.Scene = &scene
 }
 
 func NewParticle(posX, posY float64) Particle {
 	rays := []Ray{}
 
-	for i := 0; i < 50; i += 2 {
-		rays = append(rays, NewRay(utils.Point2D{X: posX, Y: posY}, float64(i)*math.Pi/180))
+	for i := -30; i < 40; i += 1 {
+		rays = append(rays, NewRay(utils.Point2D{X: posX, Y: posY}, utils.ToRadian(float64(i))))
 	}
 
 	return Particle{
 		Rays:     rays,
 		Rotation: 0,
+		PosX:     posX,
+		PosY:     posY,
 	}
 }

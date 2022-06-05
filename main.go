@@ -1,20 +1,18 @@
 package main
 
 import (
-	"fmt"
 	"image/color"
 	"log"
-	"math"
 	"math/rand"
 	"time"
 
+	"github.com/SharkEzz/go-raycasting/utils"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
-const WIDTH int = 1280
+const WIDTH int = 1400
 const HEIGHT int = 720
-const OFFSET = 30
 
 type Game struct {
 	boundaries []Boundary
@@ -29,10 +27,21 @@ func (g *Game) Update() error {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Clear()
-	ebitenutil.DebugPrintAt(screen, fmt.Sprint("FPS: ", math.Round(ebiten.CurrentFPS())), 5, 5)
-
 	drawBoundaries(screen, g.boundaries)
 	g.particle.DrawParticle(screen)
+
+	scene := *g.particle.Scene
+
+	w := (WIDTH / 2) / len(scene)
+	for i := 0; i < len(scene); i++ {
+
+		sq := scene[i] * scene[i]
+		wSq := (WIDTH / 2) * (WIDTH / 2)
+		c := uint8(utils.MapValue(sq, 0, float64(wSq), 255, 0))
+		h := utils.MapValue(scene[i], 0, float64(WIDTH/2), float64(HEIGHT-30), 0)
+
+		ebitenutil.DrawRect(screen, float64(i*w+(WIDTH/2)), 0, float64(w)+1, h, color.RGBA{c, c, c, 255})
+	}
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
@@ -55,10 +64,10 @@ func initGame() *Game {
 	// Boundaries
 	game.boundaries = make([]Boundary, 4)
 	game.boundaries = []Boundary{
-		{OFFSET, OFFSET, float64(WIDTH) - OFFSET, OFFSET},
-		{float64(WIDTH - OFFSET), OFFSET, float64(WIDTH - OFFSET), float64(HEIGHT - OFFSET)},
-		{float64(WIDTH - OFFSET), float64(HEIGHT - OFFSET), OFFSET, float64(HEIGHT - OFFSET)},
-		{OFFSET, float64(HEIGHT - OFFSET), OFFSET, OFFSET},
+		{0, 0, float64(WIDTH / 2), 0},
+		{float64(WIDTH / 2), 0, float64(WIDTH / 2), float64(HEIGHT)},
+		{float64(WIDTH / 2), float64(HEIGHT), 0, float64(HEIGHT)},
+		{0, float64(HEIGHT), 0, 0},
 	}
 
 	// Random boundaries
@@ -67,15 +76,15 @@ func initGame() *Game {
 
 	for i := 0; i < 5; i++ {
 		game.boundaries = append(game.boundaries, Boundary{
-			float64(r1.Intn(WIDTH)),
+			float64(r1.Intn(WIDTH / 2)),
 			float64(r1.Intn(HEIGHT)),
-			float64(r1.Intn(WIDTH)),
+			float64(r1.Intn(WIDTH / 2)),
 			float64(r1.Intn(HEIGHT)),
 		})
 	}
 
 	// Particle
-	game.particle = NewParticle(float64(WIDTH)/2, float64(HEIGHT)/2)
+	game.particle = NewParticle(float64(WIDTH/2)/2, float64(HEIGHT)/2)
 
 	return &game
 }
@@ -87,15 +96,13 @@ func drawBoundaries(screen *ebiten.Image, boundaries []Boundary) {
 }
 
 func (g *Game) setParticleCursorPos(particle *Particle) {
-	cursorPosX, cursorPosY := ebiten.CursorPosition()
-
-	if ebiten.IsKeyPressed(ebiten.KeyArrowRight) {
+	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		particle.Rotation += 4
 
 		if particle.Rotation > 360 {
 			particle.Rotation = 0
 		}
-	} else if ebiten.IsKeyPressed(ebiten.KeyArrowLeft) {
+	} else if ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
 		particle.Rotation -= 4
 
 		if particle.Rotation < 0 {
@@ -103,17 +110,7 @@ func (g *Game) setParticleCursorPos(particle *Particle) {
 		}
 	}
 
-	if cursorPosX < OFFSET {
-		cursorPosX = OFFSET
-	} else if cursorPosX > WIDTH-OFFSET {
-		cursorPosX = WIDTH - OFFSET
-	}
+	mouseX, mouseY := ebiten.CursorPosition()
 
-	if cursorPosY < OFFSET {
-		cursorPosY = OFFSET
-	} else if cursorPosY > HEIGHT-OFFSET {
-		cursorPosY = HEIGHT - OFFSET
-	}
-
-	particle.MoveParticle(float64(cursorPosX), float64(cursorPosY), &g.boundaries)
+	particle.MoveParticle(float64(mouseX), float64(mouseY), &g.boundaries)
 }
