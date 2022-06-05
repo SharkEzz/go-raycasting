@@ -38,7 +38,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		sq := scene[i] * scene[i]
 		wSq := (WIDTH / 2) * (WIDTH / 2)
 		c := uint8(utils.MapValue(sq, 0, float64(wSq), 255, 0))
-		h := utils.MapValue(scene[i], 0, float64(WIDTH/2), float64(HEIGHT), 0)
+		h := utils.MapValue(1/scene[i], 0, 0.02, 0, float64(HEIGHT))
 
 		ebitenutil.DrawRect(screen, float64(i*w+(WIDTH/2)), (float64(HEIGHT)-h)/2, float64(w), h, color.RGBA{c, c, c, 0xFF})
 	}
@@ -96,21 +96,13 @@ func drawBoundaries(screen *ebiten.Image, boundaries []Boundary) {
 }
 
 func (g *Game) setParticleCursorPos(particle *Particle) {
-	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-		particle.Rotation += 4
-
-		if particle.Rotation > 360 {
-			particle.Rotation = 0
-		}
-	} else if ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
-		particle.Rotation -= 4
-
-		if particle.Rotation < 0 {
-			particle.Rotation = 360
-		}
-	}
-
 	mouseX, mouseY := ebiten.CursorPosition()
+
+	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+		particle.Rotate(-0.03)
+	} else if ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
+		particle.Rotate(0.03)
+	}
 
 	particle.MoveParticle(float64(mouseX), float64(mouseY), &g.boundaries)
 }

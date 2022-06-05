@@ -11,9 +11,9 @@ import (
 )
 
 type Particle struct {
-	PosX, PosY, Rotation float64
-	Rays                 []Ray
-	Scene                *[]float64
+	PosX, PosY, Heading float64
+	Rays                []Ray
+	Scene               *[]float64
 }
 
 func (p *Particle) DrawParticle(screen *ebiten.Image) {
@@ -39,7 +39,6 @@ func (p *Particle) MoveParticle(posX, posY float64, boundaries *[]Boundary) {
 			X: posX,
 			Y: posY,
 		})
-		p.Rays[index].SetDirection(utils.ToRadian(p.Rotation))
 
 		record := math.Inf(0)
 		var closest *utils.Point2D
@@ -68,6 +67,14 @@ func (p *Particle) MoveParticle(posX, posY float64, boundaries *[]Boundary) {
 	p.Scene = &scene
 }
 
+func (p *Particle) Rotate(angle float64) {
+	p.Heading += angle
+
+	for index := range p.Rays {
+		p.Rays[index].SetAngle(utils.ToRadian(float64(index)) + p.Heading)
+	}
+}
+
 func NewParticle(posX, posY float64) Particle {
 	rays := []Ray{}
 
@@ -76,9 +83,8 @@ func NewParticle(posX, posY float64) Particle {
 	}
 
 	return Particle{
-		Rays:     rays,
-		Rotation: 0,
-		PosX:     posX,
-		PosY:     posY,
+		Rays: rays,
+		PosX: posX,
+		PosY: posY,
 	}
 }

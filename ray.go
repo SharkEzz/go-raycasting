@@ -4,13 +4,11 @@ import (
 	"math"
 
 	"github.com/SharkEzz/go-raycasting/utils"
-	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type Ray struct {
 	StartPos  utils.Point2D
 	Direction utils.Point2D
-	Angle     float64
 	StopX     float64
 	StopY     float64
 }
@@ -51,8 +49,8 @@ func (r *Ray) Cast(boundary *Boundary) *utils.Point2D {
 
 func (r *Ray) SetOrigin(origin utils.Point2D) {
 	r.StartPos = origin
-	r.StopX = origin.X + r.Direction.X
-	r.StopY = origin.Y + r.Direction.Y
+	r.StopX = origin.X + r.Direction.X*20
+	r.StopY = origin.Y + r.Direction.Y*20
 }
 
 func (r *Ray) SetStop(stop utils.Point2D) {
@@ -60,31 +58,23 @@ func (r *Ray) SetStop(stop utils.Point2D) {
 	r.StopY = stop.Y
 }
 
-func (r *Ray) SetDirection(angle float64) {
-	newDirection := ebiten.GeoM{}
-	// Apply initial rotation
-	newDirection.Rotate(r.Angle)
-
-	// Apply new angle to get the new direction
-	x, y := newDirection.Apply(math.Cos(angle), math.Sin(angle))
-
+func (r *Ray) SetAngle(angle float64) {
 	r.Direction = utils.Point2D{
-		X: x,
-		Y: y,
+		X: math.Cos(angle),
+		Y: math.Sin(angle),
 	}
 }
 
 func NewRay(startPos utils.Point2D, angle float64) Ray {
 	ray := Ray{
 		StartPos: startPos,
-		Angle:    angle,
 		Direction: utils.Point2D{
 			X: math.Cos(angle),
 			Y: math.Sin(angle),
 		},
 	}
-	ray.StopX = startPos.X + ray.Direction.X
-	ray.StopY = startPos.Y + ray.Direction.Y
+	ray.StopX = startPos.X + ray.Direction.X*20
+	ray.StopY = startPos.Y + ray.Direction.Y*20
 
 	return ray
 }
