@@ -89,6 +89,20 @@ func drawBoundaries(screen *ebiten.Image, boundaries []Boundary) {
 func (g *Game) setParticleCursorPos(particle *Particle) {
 	cursorPosX, cursorPosY := ebiten.CursorPosition()
 
+	if ebiten.IsKeyPressed(ebiten.KeyArrowRight) {
+		particle.Rotation += 4
+
+		if particle.Rotation > 360 {
+			particle.Rotation = 0
+		}
+	} else if ebiten.IsKeyPressed(ebiten.KeyArrowLeft) {
+		particle.Rotation -= 4
+
+		if particle.Rotation < 0 {
+			particle.Rotation = 360
+		}
+	}
+
 	if cursorPosX < OFFSET {
 		cursorPosX = OFFSET
 	} else if cursorPosX > WIDTH-OFFSET {
@@ -101,5 +115,5 @@ func (g *Game) setParticleCursorPos(particle *Particle) {
 		cursorPosY = HEIGHT - OFFSET
 	}
 
-	particle.MoveParticle(float64(cursorPosX), float64(cursorPosY), g.boundaries)
+	particle.MoveParticle(float64(cursorPosX), float64(cursorPosY), &g.boundaries)
 }
