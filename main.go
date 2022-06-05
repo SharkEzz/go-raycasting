@@ -38,9 +38,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		sq := scene[i] * scene[i]
 		wSq := (WIDTH / 2) * (WIDTH / 2)
 		c := uint8(utils.MapValue(sq, 0, float64(wSq), 255, 0))
-		h := utils.MapValue(scene[i], 0, float64(WIDTH/2), float64(HEIGHT-30), 0)
+		h := utils.MapValue(scene[i], 0, float64(WIDTH/2), float64(HEIGHT), 0)
 
-		ebitenutil.DrawRect(screen, float64(i*w+(WIDTH/2)), 0, float64(w)+1, h, color.RGBA{c, c, c, 255})
+		ebitenutil.DrawRect(screen, float64(i*w+(WIDTH/2)), (float64(HEIGHT)-h)/2, float64(w), h, color.RGBA{c, c, c, 0xFF})
 	}
 }
 
