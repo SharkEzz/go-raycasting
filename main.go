@@ -3,7 +3,6 @@ package main
 import (
 	"image/color"
 	"log"
-	"math"
 	"math/rand"
 	"time"
 
@@ -14,6 +13,7 @@ import (
 
 const WIDTH int = 1400
 const HEIGHT int = 720
+const MAX_VIEW_DISTANCE float64 = float64(WIDTH / 2)
 
 type Game struct {
 	boundaries []Boundary
@@ -35,16 +35,18 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	w := (WIDTH / 2) / len(scene)
 	for i := 0; i < len(scene); i++ {
-
 		distance := scene[i]
-		if math.IsInf(distance, 1) || distance <= 0 {
-			distance = float64(WIDTH / 2)
+		if distance <= 0 || distance >= MAX_VIEW_DISTANCE {
+			continue
 		}
 
 		sq := distance * distance
-		wSq := float64((WIDTH / 2) * (WIDTH / 2))
-		c := uint8(utils.MapValue(sq, 0, wSq, 255, 0))
+		wSq := MAX_VIEW_DISTANCE * MAX_VIEW_DISTANCE
+		shade := utils.MapValue(sq, 0, wSq, 255, 0)
+		c := uint8(utils.ClampValue(shade, 0, 255))
+
 		h := utils.MapValue(1/distance, 0, 0.02, 0, float64(HEIGHT))
+		h = utils.ClampValue(h, 0, float64(HEIGHT))
 
 		ebitenutil.DrawRect(screen, float64(i*w+(WIDTH/2)), (float64(HEIGHT)-h)/2, float64(w), h, color.RGBA{c, c, c, 0xFF})
 	}
@@ -68,7 +70,6 @@ func initGame() *Game {
 	game := Game{}
 
 	// Boundaries
-	game.boundaries = make([]Boundary, 4)
 	game.boundaries = []Boundary{
 		{0, 0, float64(WIDTH / 2), 0},
 		{float64(WIDTH / 2), 0, float64(WIDTH / 2), float64(HEIGHT)},

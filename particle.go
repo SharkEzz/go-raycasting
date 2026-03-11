@@ -10,6 +10,9 @@ import (
 	"github.com/SharkEzz/go-raycasting/utils"
 )
 
+const FOV = 70
+const HALF_FOV = FOV / 2
+
 type Particle struct {
 	PosX, PosY, Heading float64
 	Rays                []Ray
@@ -42,7 +45,7 @@ func (p *Particle) MoveParticle(posX, posY float64, boundaries []Boundary) {
 			Y: posY,
 		})
 
-		record := math.Inf(0)
+		record := MAX_VIEW_DISTANCE
 		var closest *utils.Point2D
 
 		for _, boundary := range boundaries {
@@ -63,7 +66,13 @@ func (p *Particle) MoveParticle(posX, posY float64, boundaries []Boundary) {
 		if closest != nil {
 			p.Rays[index].SetStop(*closest)
 		}
-		p.Scene[index] = record
+
+		// fish-eye correction using delta between ray angle and camera heading
+		correctedDistance := record * math.Cos(p.Rays[index].Angle-p.Heading)
+		if correctedDistance < 0 {
+			correctedDistance = MAX_VIEW_DISTANCE
+		}
+		p.Scene[index] = correctedDistance
 	}
 }
 
@@ -71,14 +80,15 @@ func (p *Particle) Rotate(angle float64) {
 	p.Heading += angle
 
 	for index := range p.Rays {
-		p.Rays[index].SetAngle(utils.ToRadian(float64(index)) + p.Heading)
+		rayOffset := float64(index - HALF_FOV)
+		p.Rays[index].SetAngle(utils.ToRadian(rayOffset) + p.Heading)
 	}
 }
 
 func NewParticle(posX, posY float64) Particle {
 	rays := []Ray{}
 
-	for i := -30; i < 40; i += 1 {
+	for i := -HALF_FOV; i < HALF_FOV; i += 1 {
 		rays = append(rays, NewRay(utils.Point2D{X: posX, Y: posY}, utils.ToRadian(float64(i))))
 	}
 
