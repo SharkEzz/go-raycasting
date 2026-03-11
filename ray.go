@@ -14,7 +14,7 @@ type Ray struct {
 }
 
 // Return the intersection point between a ray and a boundary, nil if there is none
-func (r *Ray) Cast(boundary *Boundary) *utils.Point2D {
+func (r *Ray) Cast(boundary Boundary) *utils.Point2D {
 	x1 := boundary.StartX
 	y1 := boundary.StartY
 	x2 := boundary.StopX

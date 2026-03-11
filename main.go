@@ -3,6 +3,7 @@ package main
 import (
 	"image/color"
 	"log"
+	"math"
 	"math/rand"
 	"time"
 
@@ -30,15 +31,20 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	drawBoundaries(screen, g.boundaries)
 	g.particle.DrawParticle(screen)
 
-	scene := *g.particle.Scene
+	scene := g.particle.Scene
 
 	w := (WIDTH / 2) / len(scene)
 	for i := 0; i < len(scene); i++ {
 
-		sq := scene[i] * scene[i]
-		wSq := (WIDTH / 2) * (WIDTH / 2)
-		c := uint8(utils.MapValue(sq, 0, float64(wSq), 255, 0))
-		h := utils.MapValue(1/scene[i], 0, 0.02, 0, float64(HEIGHT))
+		distance := scene[i]
+		if math.IsInf(distance, 1) || distance <= 0 {
+			distance = float64(WIDTH / 2)
+		}
+
+		sq := distance * distance
+		wSq := float64((WIDTH / 2) * (WIDTH / 2))
+		c := uint8(utils.MapValue(sq, 0, wSq, 255, 0))
+		h := utils.MapValue(1/distance, 0, 0.02, 0, float64(HEIGHT))
 
 		ebitenutil.DrawRect(screen, float64(i*w+(WIDTH/2)), (float64(HEIGHT)-h)/2, float64(w), h, color.RGBA{c, c, c, 0xFF})
 	}
@@ -104,5 +110,5 @@ func (g *Game) setParticleCursorPos(particle *Particle) {
 		particle.Rotate(0.03)
 	}
 
-	particle.MoveParticle(float64(mouseX), float64(mouseY), &g.boundaries)
+	particle.MoveParticle(float64(mouseX), float64(mouseY), g.boundaries)
 }

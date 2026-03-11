@@ -13,7 +13,7 @@ import (
 type Particle struct {
 	PosX, PosY, Heading float64
 	Rays                []Ray
-	Scene               *[]float64
+	Scene               []float64
 }
 
 func (p *Particle) DrawParticle(screen *ebiten.Image) {
@@ -28,11 +28,13 @@ func (p *Particle) DrawParticle(screen *ebiten.Image) {
 	}
 }
 
-func (p *Particle) MoveParticle(posX, posY float64, boundaries *[]Boundary) {
+func (p *Particle) MoveParticle(posX, posY float64, boundaries []Boundary) {
 	p.PosX = posX
 	p.PosY = posY
 
-	var scene []float64
+	if len(p.Scene) != len(p.Rays) {
+		p.Scene = make([]float64, len(p.Rays))
+	}
 
 	for index := range p.Rays {
 		p.Rays[index].SetOrigin(utils.Point2D{
@@ -43,13 +45,13 @@ func (p *Particle) MoveParticle(posX, posY float64, boundaries *[]Boundary) {
 		record := math.Inf(0)
 		var closest *utils.Point2D
 
-		for _, boundary := range *boundaries {
-			intersect := p.Rays[index].Cast(&boundary)
+		for _, boundary := range boundaries {
+			intersect := p.Rays[index].Cast(boundary)
 			if intersect == nil {
 				continue
 			}
 
-			distance := math.Sqrt(math.Pow(intersect.X-p.PosX, 2) + math.Pow(intersect.Y-p.PosY, 2))
+			distance := math.Hypot(intersect.X-p.PosX, intersect.Y-p.PosY)
 			if distance >= record {
 				continue
 			}
@@ -61,10 +63,8 @@ func (p *Particle) MoveParticle(posX, posY float64, boundaries *[]Boundary) {
 		if closest != nil {
 			p.Rays[index].SetStop(*closest)
 		}
-		scene = append(scene, record)
+		p.Scene[index] = record
 	}
-
-	p.Scene = &scene
 }
 
 func (p *Particle) Rotate(angle float64) {
@@ -83,8 +83,9 @@ func NewParticle(posX, posY float64) Particle {
 	}
 
 	return Particle{
-		Rays: rays,
-		PosX: posX,
-		PosY: posY,
+		Rays:  rays,
+		Scene: make([]float64, len(rays)),
+		PosX:  posX,
+		PosY:  posY,
 	}
 }
