@@ -9,12 +9,13 @@ import (
 type Ray struct {
 	StartPos  utils.Point2D
 	Direction utils.Point2D
+	Angle     float64
 	StopX     float64
 	StopY     float64
 }
 
 // Return the intersection point between a ray and a boundary, nil if there is none
-func (r *Ray) Cast(boundary *Boundary) *utils.Point2D {
+func (r *Ray) Cast(boundary Boundary) *utils.Point2D {
 	x1 := boundary.StartX
 	y1 := boundary.StartY
 	x2 := boundary.StopX
@@ -59,6 +60,7 @@ func (r *Ray) SetStop(stop utils.Point2D) {
 }
 
 func (r *Ray) SetAngle(angle float64) {
+	r.Angle = angle
 	r.Direction = utils.Point2D{
 		X: math.Cos(angle),
 		Y: math.Sin(angle),
@@ -68,6 +70,7 @@ func (r *Ray) SetAngle(angle float64) {
 func NewRay(startPos utils.Point2D, angle float64) Ray {
 	ray := Ray{
 		StartPos: startPos,
+		Angle:    angle,
 		Direction: utils.Point2D{
 			X: math.Cos(angle),
 			Y: math.Sin(angle),
